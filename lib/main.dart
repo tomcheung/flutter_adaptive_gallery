@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_adaptive_layout/adaptive_layout_builder.dart';
+import 'package:flutter_adaptive_layout/image_details_page.dart';
 import 'package:flutter_adaptive_layout/sample_image.dart';
 
 void main() {
@@ -126,9 +127,38 @@ class _PhotoViewState extends State<PhotoView> {
           const SliverToBoxAdapter(child: PhotoViewHeader()),
           SliverGrid(
             delegate: SliverChildBuilderDelegate(
-              (context, index) => Image.network(
-                  SampleImage.images[index % SampleImage.images.length],
-                  fit: BoxFit.cover),
+              (context, index) {
+                String image = SampleImage.images[index % SampleImage.images.length];
+                return GestureDetector(
+                  onTap: () {
+                    // Show adaptive dialog when click the image
+                    showDialog(context: context, builder: (BuildContext context) {
+                      final showFullScreenDialog = MediaQuery.sizeOf(context).width < 600;
+                      final dialogContent = ImageDetailsPage(image: image);
+                      
+                      if (showFullScreenDialog) {
+                        return Dialog.fullscreen(
+                          child: dialogContent,
+                        );
+                      } else {
+                        return Dialog(
+                          clipBehavior: Clip.antiAliasWithSaveLayer,
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 400),
+                            child: dialogContent,
+                          )
+                        );
+                      }
+                    });
+                  },
+                  child: FocusableActionDetector(
+                    child: Image.network(
+                      image,
+                      fit: BoxFit.cover
+                    ),
+                  ),
+                );
+              }
             ),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: size == LayoutSizeData.small ? 2 : 3,
