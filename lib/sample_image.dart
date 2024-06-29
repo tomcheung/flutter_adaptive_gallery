@@ -9,6 +9,4 @@ class SampleImage {
   static const String image4 = 'https://images.unsplash.com/photo-1718910097973-fd2f6d181881?q=80&w=3687&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
 
   static const List<String> images = [image1, image2, image3, image4];
-
-  // test
 }
