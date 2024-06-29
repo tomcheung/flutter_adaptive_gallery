@@ -8,7 +8,6 @@ class ImageDetailsPage extends StatelessWidget {
     required this.image,
   });
 
-
   @override
   Widget build(BuildContext context) {
     return Column(
