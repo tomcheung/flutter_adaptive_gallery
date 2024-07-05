@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_adaptive_layout/adaptive_layout.dart';
 import 'package:flutter_adaptive_layout/image_details_page.dart';
 import 'package:flutter_adaptive_layout/sample_image.dart';
 
@@ -15,7 +16,12 @@ class AdaptiveGalleryApp extends StatelessWidget {
       theme: ThemeData.from(
           colorScheme:
               ColorScheme.fromSeed(seedColor: const Color(0x8AAD5D5D))),
-      home: const GalleryMainPage(),
+      home: AdaptiveLayoutBuilder(
+        layoutBuilder: (size) => LayoutSize(
+          size: size,
+          child: const GalleryMainPage(),
+        ),
+      ),
     );
   }
 }
@@ -35,10 +41,17 @@ class GalleryMainPage extends StatefulWidget {
 class _HomeState extends State<GalleryMainPage> {
   @override
   Widget build(BuildContext context) {
+    final size = LayoutSize.of(context);
     const child = PhotoView();
 
     return Center(
-      child: TabBarLayout(child: child),
+      child: switch (size) {
+        LayoutSizeData.large =>
+          NavigationRailLayout(extendNavigationRail: true, child: child),
+        LayoutSizeData.medium =>
+          NavigationRailLayout(extendNavigationRail: true, child: child),
+        LayoutSizeData.small => TabBarLayout(child: child),
+      },
     );
   }
 }
@@ -59,6 +72,41 @@ class TabBarLayout extends StatelessWidget {
             .toList(growable: false),
       ),
       body: child,
+    );
+  }
+}
+
+class NavigationRailLayout extends StatelessWidget {
+  final bool extendNavigationRail;
+  final Widget child;
+
+  const NavigationRailLayout(
+      {super.key, required this.child, this.extendNavigationRail = true});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Flutter adaptive gallery')),
+      body: Row(
+        children: [
+          NavigationRail(
+            extended: extendNavigationRail,
+            destinations: GalleryMainPage.tabs
+                .map((t) => NavigationRailDestination(
+                    icon: Icon(t.icon), label: Text(t.label)))
+                .toList(growable: false),
+            selectedIndex: 0,
+          ),
+          Expanded(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: 1200),
+                child: child,
+              ),
+            ),
+          )
+        ],
+      ),
     );
   }
 }
