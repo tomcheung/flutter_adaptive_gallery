@@ -12,14 +12,14 @@ class AdaptiveGalleryApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData.from(
-          colorScheme:
+    return AdaptiveLayoutBuilder(
+      layoutBuilder: (size) => LayoutSize(
+        size: size,
+        child: MaterialApp(
+          theme: ThemeData.from(
+              colorScheme:
               ColorScheme.fromSeed(seedColor: const Color(0x8AAD5D5D))),
-      home: AdaptiveLayoutBuilder(
-        layoutBuilder: (size) => LayoutSize(
-          size: size,
-          child: const GalleryMainPage(),
+          home: const GalleryMainPage(),
         ),
       ),
     );
@@ -133,14 +133,24 @@ class _PhotoViewState extends State<PhotoView> {
               return GestureDetector(
                 onTap: () {
                   // Show adaptive dialog when click the image
-                  showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        final dialogContent = ImageDetailsPage(image: image);
-                        return Dialog(
-                          child: dialogContent,
-                        );
-                      });
+                  showDialog(context: context, builder: (BuildContext context) {
+                    final showFullScreenDialog = LayoutSize.of(context) == LayoutSizeData.small;
+                    final dialogContent = ImageDetailsPage(image: image);
+
+                    if (showFullScreenDialog) {
+                      return Dialog.fullscreen(
+                        child: dialogContent,
+                      );
+                    } else {
+                      return Dialog(
+                          clipBehavior: Clip.antiAliasWithSaveLayer,
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 400),
+                            child: dialogContent,
+                          )
+                      );
+                    }
+                  });
                 },
                 child: FocusableActionDetector(
                   child: Image.network(image, fit: BoxFit.cover),
@@ -164,7 +174,12 @@ class PhotoViewHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _buildSmallLayout(context);
+    final size = LayoutSize.of(context);
+    return switch (size) {
+      LayoutSizeData.large => _buildLargeLayout(context),
+      LayoutSizeData.medium => _buildMediumLayout(context),
+      LayoutSizeData.small => _buildSmallLayout(context),
+    };
   }
 
   Widget _buildSmallLayout(BuildContext context) {
