@@ -18,7 +18,7 @@ class AdaptiveGalleryApp extends StatelessWidget {
         child: MaterialApp(
           theme: ThemeData.from(
               colorScheme:
-              ColorScheme.fromSeed(seedColor: const Color(0x8AAD5D5D))),
+                  ColorScheme.fromSeed(seedColor: const Color(0x8AAD5D5D))),
           home: const GalleryMainPage(),
         ),
       ),
@@ -133,27 +133,30 @@ class _PhotoViewState extends State<PhotoView> {
               return GestureDetector(
                 onTap: () {
                   // Show adaptive dialog when click the image
-                  showDialog(context: context, builder: (BuildContext context) {
-                    final showFullScreenDialog = LayoutSize.of(context) == LayoutSizeData.small;
-                    final dialogContent = ImageDetailsPage(image: image);
+                  showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        final showFullScreenDialog =
+                            LayoutSize.of(context) == LayoutSizeData.small;
+                        final dialogContent = ImageDetailsPage(image: image);
 
-                    if (showFullScreenDialog) {
-                      return Dialog.fullscreen(
-                        child: dialogContent,
-                      );
-                    } else {
-                      return Dialog(
-                          clipBehavior: Clip.antiAliasWithSaveLayer,
-                          child: ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 400),
+                        if (showFullScreenDialog) {
+                          return Dialog.fullscreen(
                             child: dialogContent,
-                          )
-                      );
-                    }
-                  });
+                          );
+                        } else {
+                          return Dialog(
+                              clipBehavior: Clip.antiAliasWithSaveLayer,
+                              child: ConstrainedBox(
+                                constraints:
+                                    const BoxConstraints(maxWidth: 400),
+                                child: dialogContent,
+                              ));
+                        }
+                      });
                 },
-                child: FocusableActionDetector(
-                  child: Image.network(image, fit: BoxFit.cover),
+                child: MouseRegion(
+                  child: GalleryImageView(image),
                 ),
               );
             }),
@@ -280,5 +283,44 @@ class PhotoViewHeader extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class GalleryImageView extends StatefulWidget {
+  final String imageUrl;
+
+  const GalleryImageView(this.imageUrl, {super.key});
+
+  @override
+  State<GalleryImageView> createState() => _GalleryImageViewState();
+}
+
+class _GalleryImageViewState extends State<GalleryImageView> {
+  var _scaleEnabled = false;
+  @override
+  Widget build(BuildContext context) {
+    double s = _scaleEnabled ? 1.03 : 1;
+    return MouseRegion(
+        onEnter: (e) {
+          setState(() {
+            _scaleEnabled = true;
+          });
+        },
+        onExit: (e) {
+          setState(() {
+            _scaleEnabled = false;
+          });
+        },
+        child: AnimatedContainer(
+          transformAlignment: Alignment.center,
+          transform: Matrix4.identity().scaled(s),
+          clipBehavior: Clip.antiAlias,
+          duration: Duration(milliseconds: 100),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(_scaleEnabled ? 15 : 0)),
+          child: Image.network(
+            widget.imageUrl,
+            fit: BoxFit.cover,
+          ),
+        ));
   }
 }
